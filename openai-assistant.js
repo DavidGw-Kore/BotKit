@@ -44,7 +44,27 @@ module.exports = {
     on_alert : function (requestId, data, callback) {
         console.log("on_alert -->  : ", data, data.message);
         return sdk.sendAlertMessage(data, callback);
+    },
+    on_webhook      : function(requestId, data, componentName, callback) {
+        const context = data.context;
+            
+        if (componentName === 'QueryAssistant') {
+            context.message = "Hello World!";
+        } 
+	switch (componentName) {
+            case 'CreateAssistant':
+		console.log(`Creating Open AI Assistant`);
+                break;
+            case 'QueryAssistant':
+		console.log(`Querying assistant with utterance: ${context.query}`);
+                context.message = "Hello World!";
+                break;
+           default:
+               console.error(`Webhook handler not found for ${componentName}`);
+        }
+        callback(null, data);
     }
+
 
 };
 
