@@ -66,7 +66,7 @@ async function messagesReady(context) {
    await sleep(DELAY_TIME);
 
    const result = await openai.beta.threads.runs.retrieve(threadId, runId);
-   context.status = result.status;
+   context.session.BotUserSession.status = result.status;
 }
 
 /**
@@ -77,12 +77,7 @@ async function messagesFetch(context) {
     console.log(`threadId: ${threadId}`);
    
     const messages = await openai.beta.threads.messages.list(threadId);
-    console.log(`data: ${JSON.stringify(messages.data)}`);
-
-    const assistantResponse = outputMessages(messages.data);
-    console.log(JSON.stringify(assistantResponse, null, 4));
-
-    context.assistantResponse = assistantResponse;
+    context.assistantResponse = outputMessages(messages.data);
 }
 
 
@@ -104,8 +99,6 @@ function outputMessages(data) {
         if (d.role === 'user') {
             continue;
         }
-        console.log(d.content[0].text.value);
-        console.log(JSON.stringify(d));
 	answer.push(d.content[0].text.value);
     }
     return answer.join(' ');
