@@ -62,9 +62,8 @@ module.exports = {
                 break;
             case 'QueryAssistantWebhook':
 		console.log(`Querying assistant with utterance: ${context.query}`);
-                callback(null, new sdk.AsyncResponse());
 		await callAssistant(context);
-		sdk.respondToHook(data);
+                callback(null, data);
                 break;
 	   case 'MessagesCreate':
 		await messagesCreate(context);

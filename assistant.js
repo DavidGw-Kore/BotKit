@@ -2,6 +2,7 @@
 const OpenAI = require('openai');
 const openai = new OpenAI();
 
+const QUERY_DELAY_TIME = 1000;
 const DELAY_TIME = 5000;
 const MAX_ATTEMPTS = 25;
 
@@ -31,7 +32,6 @@ async function questionAnswer(assistantId, query, context) {
     );
     console.log(`ANSWER: `);
     const assistantResponse = outputMessages(messages.data);
-    console.log(JSON.stringify(assistantResponse, null, 4));
     context.assistantResponse = assistantResponse;
 }
 
@@ -82,7 +82,7 @@ async function messagesFetch(context) {
     const assistantResponse = outputMessages(messages.data);
     console.log(JSON.stringify(assistantResponse, null, 4));
 
-    context.assistantResponse = assistantResponse.join();
+    context.assistantResponse = assistantResponse;
 }
 
 
@@ -93,7 +93,7 @@ async function retrieveMessages(threadId, runId) {
         if (result.status === 'completed') {
             break;
         }
-        await sleep(DELAY_TIME);
+        await sleep(QUERY_DELAY_TIME);
     }
     console.log();
 }
@@ -106,9 +106,9 @@ function outputMessages(data) {
         }
         console.log(d.content[0].text.value);
         console.log(JSON.stringify(d));
-	answer.push(d);
+	answer.push(d.content[0].text.value);
     }
-    return answer;
+    return answer.join(' ');
 }
 
 async function queryAssistant(context) {
