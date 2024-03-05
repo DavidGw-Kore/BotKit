@@ -69,6 +69,7 @@ async function messagesReady(context) {
 
    const result = await openai.beta.threads.runs.retrieve(threadId, runId);
    context.session.BotUserSession.status = result.status;
+   console.log(`context.session.BotUserSession.status: ${context.session.BotUserSession.status}`);
 }
 
 /**
@@ -84,6 +85,7 @@ async function messagesFetch(context) {
 
 
 async function retrieveMessages(threadId, runId) {
+    console.log(`threadId: ${threadId}, runId: ${runId}`);
     for (let i = MAX_ATTEMPTS; i > 0; i--) {
         process.stdout.write('.');
         const result = await openai.beta.threads.runs.retrieve(threadId, runId);
@@ -110,8 +112,8 @@ async function queryAssistant(context) {
     console.log(`QUERY: ${context.query}`);
     const assistantId = context.session.BotUserSession.assistantId;
     console.log(`assistantId: ${assistantId}`);
-    const assistant = await openai.beta.assistants.retrieve(assistantId);
-    await questionAnswer(assistant.id, context.query, context);
+//    const assistant = await openai.beta.assistants.retrieve(assistantId);
+    await questionAnswer(assistantId, context.query, context);
     console.log(`ANSWER:\n${context.assistantResponse}`);
 }
 
