@@ -1,8 +1,8 @@
 {
-  "name": "BotKit",
+  "name": "OpenAI Assistant",
   "version": "1.0.0",
-  "description": "## Introduction",
-  "main": "BookACab.js",
+  "description": "BotKit wrapper around Open AI Assistant APIs",
+  "main": "app.js",
   "dependencies": {
     "accepts": "^1.3.3",
     "ansi-styles": "^1.0.0",

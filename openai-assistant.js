@@ -1,6 +1,11 @@
-var botId = "st-6684eeda-2a24-5df3-a658-e3316167cbad";
-var botName = "Allegion Product Knowledge";
-var sdk = require("./lib/sdk");
+const botId = "st-6684eeda-2a24-5df3-a658-e3316167cbad";
+const botName = "Allegion Product Knowledge";
+const sdk = require("./lib/sdk");
+const {queryAssistant} = require("./assistant.js");
+
+async function callAssistant(context) {
+   await queryAssistant(context);
+}
 
 /*
  * This is the most basic example of BotKit.
@@ -45,7 +50,7 @@ module.exports = {
         console.log("on_alert -->  : ", data, data.message);
         return sdk.sendAlertMessage(data, callback);
     },
-    on_webhook      : function(requestId, data, componentName, callback) {
+    on_webhook      : async function(requestId, data, componentName, callback) {
         const context = data.context;
             
         if (componentName === 'QueryAssistant') {
@@ -54,10 +59,11 @@ module.exports = {
 	switch (componentName) {
             case 'CreateAssistant':
 		console.log(`Creating Open AI Assistant`);
+		console.log(`context.session.BotUserSession.assistantId: ${JSON.stringify(context.session.BotUserSession.assistantId, null, 4)}`);
                 break;
             case 'QueryAssistant':
 		console.log(`Querying assistant with utterance: ${context.query}`);
-                context.message = "Hello World!";
+		await callAssistant(context);
                 break;
            default:
                console.error(`Webhook handler not found for ${componentName}`);
@@ -67,5 +73,4 @@ module.exports = {
 
 
 };
-
 

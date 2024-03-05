@@ -9,14 +9,14 @@ const sleep = async (milliseconds) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds));
 };
 
-async function questionAnswer(assistantId, question) {
-    console.log(`QUESTION: ${question}`);
+async function questionAnswer(assistantId, query, context) {
+    console.log(`QUERY: ${query}`);
     const thread = await openai.beta.threads.create();
-    const secondMsg = await openai.beta.threads.messages.create(
+    const message = await openai.beta.threads.messages.create(
         thread.id,
         {
             role: "user",
-            content: question
+            content: query
         }
     );
     const run = await openai.beta.threads.runs.create(
@@ -30,19 +30,19 @@ async function questionAnswer(assistantId, question) {
         thread.id
     );
     console.log(`ANSWER: `);
-    outputMessages(messages.data);
+    const assistantResponse = outputMessages(messages.data);
+    console.log(JSON.stringify(assistantResponse, null, 4));
+    context.assistantResponse = assistantResponse;
 }
 
 
 async function retrieveMessages(threadId, runId) {
     for (let i = MAX_ATTEMPTS; i > 0; i--) {
-//        console.log(`run: ${runId}, thread: ${threadId}`);
         process.stdout.write('.');
         let result = await openai.beta.threads.runs.retrieve(
             threadId,
             runId
         );
-//        console.log(`result: ${JSON.stringify(result, null, 4)}`);
         if (result.status === 'completed') {
             break;
         }
@@ -52,30 +52,25 @@ async function retrieveMessages(threadId, runId) {
 }
 
 function outputMessages(data) {
+    const answer = []
     for (const d of data) {
         if (d.role === 'user') {
             continue;
         }
-//        console.log(JSON.stringify(d, null, 4));
         console.log(d.content[0].text.value);
         console.log(JSON.stringify(d));
+	answer.push(d);
     }
+    return answer;
 }
 
-async function main() {
-    const assistant = await openai.beta.assistants.retrieve(
-        "asst_WUVL4Z7rrhaCwCfpJotzvlwd"
-    );
-
-    // await questionAnswer(assistant.id, "What is the difference in the series 22 and 98 exit devices?");
-    // await questionAnswer(assistant.id, "What finishes do the 22 series exit devices come in?")
-    // await questionAnswer(assistant.id, "What finishes do the 98 series exit devices come in?")
-    // await questionAnswer(assistant.id, "What trim options are available on the series 22?");
-//    await questionAnswer(assistant.id, "What is the part number for a Panic Bar? It’s a 98-series device with exit only trim, has no cables or rods attached to it, should be in chrome finish, and is for a four-foot door.");
-//    await questionAnswer(assistant.id, "What is the Warranty on a Von Duprin 98 Device?");
-    await questionAnswer(assistant.id, "Maximum length of a concealed vertical cable");
-    await questionAnswer(assistant.id, "What is the Warranty on a Von Duprin 98 Device?");
-
+async function queryAssistant(context) {
+    const assistantId = context.session.BotUserSession.assistantId;
+    console.log(`assistantId: ${assistantId}`);
+    const assistant = await openai.beta.assistants.retrieve(assistantId);
+    await questionAnswer(assistant.id, context.query, context);
 }
 
-main();
+module.exports = {
+    queryAssistant
+};
