@@ -33,7 +33,7 @@ async function questionAnswer(assistantId, query, context) {
     );
     await retrieveMessages(threadId, run.id);
     const messages = await openai.beta.threads.messages.list(threadId);
-    const assistantResponse = outputMessages(messages.data);
+    const assistantResponse = outputMessages(context, messages);
     context.assistantResponse = assistantResponse;
 }
 
@@ -80,7 +80,7 @@ async function messagesFetch(context) {
     console.log(`threadId: ${threadId}`);
    
     const messages = await openai.beta.threads.messages.list(threadId);
-    context.assistantResponse = outputMessages(messages.data);
+    context.assistantResponse = outputMessages(context, messages);
 }
 
 
@@ -97,14 +97,34 @@ async function retrieveMessages(threadId, runId) {
     console.log();
 }
 
-function outputMessages(data) {
+function outputMessages(context, messages) {
+    let search = true;
+    console.log(`context.session.BotUserSession.lastMessageId: ${context.session.BotUserSession.lastMessageId}`);
+    const lastMessageId = context.session.BotUserSession.lastMessageId;
+    const data = messages.data;
     const answer = []
+    answer.push(data[0].content[0].text.value);
+/*
     for (const d of data) {
+	// Find last message id
+	// 1) Check to see if we are seraching
+	// 2) Check to see if we have a lastMessageId
+	// 3) Check to see if the current message Id does not match and then continue
+	if (search && lastMessageId && d.id ===! lastMessageId) {
+	   continue;
+	} else {
+	   search = false;
+	}
+	// Skip this message if from the user
         if (d.role === 'user') {
             continue;
         }
 	answer.push(d.content[0].text.value);
     }
+    context.session.BotUserSession.lastMessageId = messages.last_id;
+    console.log(`messages: ${JSON.stringify(messages)}`);
+    console.log(`context.session.BotUserSession.lastMessageId: ${context.session.BotUserSession.lastMessageId}`);
+*/
     return answer.join(' ');
 }
 
