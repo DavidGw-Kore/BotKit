@@ -45,14 +45,19 @@ async function messagesCreate(context) {
     console.log(`query: ${query}`);
 
     const assistantId = context.session.BotUserSession.assistantId;
+    const threadId = context.session.BotUserSession.threadId;
 
-    const thread = await openai.beta.threads.create();
-    context.session.BotUserSession.threadId = thread.id;
+    const message = await openai.beta.threads.messages.create(
+        threadId,
+        {
+            role: "user",
+            content: query
+        }
+    );
+
     console.log(`context.session.BotUserSession.threadId: ${context.session.BotUserSession.threadId}`);
 
-    const message = await openai.beta.threads.messages.create(thread.id, {role: "user", content: query});
-
-    const run = await openai.beta.threads.runs.create(thread.id, {assistant_id: assistantId});
+    const run = await openai.beta.threads.runs.create(threadId, {assistant_id: assistantId});
     context.session.BotUserSession.runId = run.id;
     console.log(`context.session.BotUserSession.runId: ${context.session.BotUserSession.runId}`);
 }
@@ -104,15 +109,15 @@ function outputMessages(context, messages) {
     const data = messages.data;
     console.log(JSON.stringify(messages.data, null, 4));
     let answer = [];
-    for (const d of data) {
+    answer.push(data[0]?.content[0]?.text?.value);
+//    for (const d of data) {
 	// Skip this message if from the user
-        if (d.role === 'user') {
-            continue;
-        }
-     	answer.push(d.content[0]?.text?.value);
-    }
+        //if (d.role === 'user') {
+         //   continue;
+        //}
+    //}
     context.session.BotUserSession.lastMessageId = messages.last_id;
-    console.log(`messages: ${JSON.stringify(messages)}`);
+//    console.log(`messages: ${JSON.stringify(messages)}`);
     console.log(`context.session.BotUserSession.lastMessageId: ${context.session.BotUserSession.lastMessageId}`);
     answer = answer.join('');
     return answer ? answer : "";
