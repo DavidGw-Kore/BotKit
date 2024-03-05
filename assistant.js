@@ -102,8 +102,7 @@ function outputMessages(context, messages) {
     console.log(`context.session.BotUserSession.lastMessageId: ${context.session.BotUserSession.lastMessageId}`);
     const lastMessageId = context.session.BotUserSession.lastMessageId;
     const data = messages.data;
-    const answer = []
-    answer.push(data[0].content[0].text.value);
+    const answer = data[0]?.content[0]?.text?.value;
 /*
     for (const d of data) {
 	// Find last message id
@@ -125,7 +124,7 @@ function outputMessages(context, messages) {
     console.log(`messages: ${JSON.stringify(messages)}`);
     console.log(`context.session.BotUserSession.lastMessageId: ${context.session.BotUserSession.lastMessageId}`);
 */
-    return answer.join(' ');
+    return answer ? answer : "";
 }
 
 async function queryAssistant(context) {
