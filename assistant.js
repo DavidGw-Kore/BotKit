@@ -10,27 +10,29 @@ const sleep = async (milliseconds) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds));
 };
 
-async function questionAnswer(assistantId, query, context) {
-    console.log(`QUERY: ${query}`);
+async function createThread(context) {
     const thread = await openai.beta.threads.create();
+    context.session.BotUserSession.threadId = thread.id;
+    console.log(`context.session.BotUserSession.threadId: ${context.session.BotUserSession.threadId}`);
+}
+
+async function questionAnswer(assistantId, query, context) {
+    const threadId = context.session.BotUserSession.threadId; 
     const message = await openai.beta.threads.messages.create(
-        thread.id,
+        threadId,
         {
             role: "user",
             content: query
         }
     );
     const run = await openai.beta.threads.runs.create(
-        thread.id,
+        threadId,
         {
             assistant_id: assistantId
         }
     );
-    await retrieveMessages(thread.id, run.id);
-    const messages = await openai.beta.threads.messages.list(
-        thread.id
-    );
-    console.log(`ANSWER: `);
+    await retrieveMessages(threadId, run.id);
+    const messages = await openai.beta.threads.messages.list(threadId);
     const assistantResponse = outputMessages(messages.data);
     context.assistantResponse = assistantResponse;
 }
@@ -105,13 +107,16 @@ function outputMessages(data) {
 }
 
 async function queryAssistant(context) {
+    console.log(`QUERY: ${context.query}`);
     const assistantId = context.session.BotUserSession.assistantId;
     console.log(`assistantId: ${assistantId}`);
     const assistant = await openai.beta.assistants.retrieve(assistantId);
     await questionAnswer(assistant.id, context.query, context);
+    console.log(`ANSWER:\n${context.assistantResponse}`);
 }
 
 module.exports = {
+    createThread,
     messagesCreate,
     messagesFetch,
     messagesReady,

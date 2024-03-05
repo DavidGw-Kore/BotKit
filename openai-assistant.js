@@ -1,7 +1,7 @@
 const botId = "st-6684eeda-2a24-5df3-a658-e3316167cbad";
 const botName = "Allegion Product Knowledge";
 const sdk = require("./lib/sdk");
-const {messagesCreate, messagesReady, messagesFetch, queryAssistant} = require("./assistant.js");
+const {createThread, messagesCreate, messagesReady, messagesFetch, queryAssistant} = require("./assistant.js");
 
 async function callAssistant(context) {
    await queryAssistant(context);
@@ -58,6 +58,7 @@ module.exports = {
             case 'CreateAssistant':
 		console.log(`Creating Open AI Assistant`);
 		console.log(`context.session.BotUserSession.assistantId: ${JSON.stringify(context.session.BotUserSession.assistantId, null, 4)}`);
+		await createThread(context);
                 callback(null, data);
                 break;
             case 'QueryAssistantWebhook':
