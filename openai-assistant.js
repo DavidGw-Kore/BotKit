@@ -1,7 +1,7 @@
 const botId = "st-6684eeda-2a24-5df3-a658-e3316167cbad";
 const botName = "Allegion Product Knowledge";
 const sdk = require("./lib/sdk");
-const {queryAssistant} = require("./assistant.js");
+const {messagesCreate, messagesReady, messagesFetch, queryAssistant} = require("./assistant.js");
 
 async function callAssistant(context) {
    await queryAssistant(context);
@@ -52,25 +52,35 @@ module.exports = {
     },
     on_webhook      : async function(requestId, data, componentName, callback) {
         const context = data.context;
+	console.log(`componentName: ${componentName}`);
             
-        if (componentName === 'QueryAssistant') {
-            context.message = "Hello World!";
-        } 
 	switch (componentName) {
             case 'CreateAssistant':
 		console.log(`Creating Open AI Assistant`);
 		console.log(`context.session.BotUserSession.assistantId: ${JSON.stringify(context.session.BotUserSession.assistantId, null, 4)}`);
+                callback(null, data);
                 break;
-            case 'QueryAssistant':
+            case 'QueryAssistantWebhook':
 		console.log(`Querying assistant with utterance: ${context.query}`);
+                callback(null, new sdk.AsyncResponse());
 		await callAssistant(context);
+		sdk.respondToHook(data);
                 break;
+	   case 'MessagesCreate':
+		await messagesCreate(context);
+                callback(null, data);
+		break;
+	   case 'MessagesReady':
+		await messagesReady(context);
+                callback(null, data);
+		break;
+	   case 'MessagesFetch':
+		await messagesFetch(context);
+                callback(null, data);
+		break;
            default:
                console.error(`Webhook handler not found for ${componentName}`);
         }
-        callback(null, data);
     }
-
-
 };
 
