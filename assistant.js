@@ -82,9 +82,11 @@ async function messagesReady(context) {
  */
 async function messagesFetch(context) {
     const threadId = context.session.BotUserSession.threadId;
-    console.log(`threadId: ${threadId}`);
+    const runId = context.session.BotUserSession.runId;
+    console.log(`threadId: ${threadId}, runId: ${runId}`);
    
     const messages = await openai.beta.threads.messages.list(threadId);
+    console.log(`message.data.length: ${messages.data.length}`);
     context.assistantResponse = outputMessages(context, messages);
 }
 
@@ -107,7 +109,7 @@ function outputMessages(context, messages) {
     console.log(`context.session.BotUserSession.lastMessageId: ${context.session.BotUserSession.lastMessageId}`);
     const lastMessageId = context.session.BotUserSession.lastMessageId;
     const data = messages.data;
-    console.log(JSON.stringify(messages.data, null, 4));
+    console.log(`data: ${JSON.stringify(messages.data, null, 4)}`);
     let answer = [];
     answer.push(data[0]?.content[0]?.text?.value);
 //    for (const d of data) {
